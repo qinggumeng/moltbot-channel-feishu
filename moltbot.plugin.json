@@ -1,7 +1,7 @@
 {
     "id": "feishu",
     "name": "Feishu",
-    "description": "Feishu/Lark channel plugin for Clawdbot",
+    "description": "Feishu/Lark channel plugin for Moltbot",
     "version": "0.0.4",
     "channels": [
         "feishu"

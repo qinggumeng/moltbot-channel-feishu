@@ -1,45 +1,68 @@
 # clawdbot-plugin-feishu
 
-Feishu channel plugin for [~~Clawdbot~~**Moltbot**](https://clawd.bot).
+**Turn Feishu into your AI super-gateway.** A production-grade Feishu/Lark channel plugin for [Moltbot](https://molt.bot) — the brilliant AI agent framework.
 
 ## Install
 
 ```bash
-clawdbot plugins install github:samzong/clawdbot-plugin-feishu
+# npm
+moltbot plugin install @samzong/feishu
+
+# GitHub (for testing)
+moltbot plugin install github:samzong/clawdbot-plugin-feishu
 ```
 
 ## Configure
 
-### Environment Variables (recommended)
+Edit `~/.clawdbot/clawdbot.json`:
+
+```json
+{
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "appId": "cli_xxx",
+      "appSecret": "xxx",
+      "domain": "feishu",
+      "dmPolicy": "pairing",
+      "groupPolicy": "open"
+    }
+  }
+}
+```
+
+Or use environment variables (takes precedence if config values are empty):
 
 ```bash
 export FEISHU_APP_ID="cli_xxx"
 export FEISHU_APP_SECRET="xxx"
 ```
 
-### Config File
+### Configuration Options
 
-```yaml
-# ~/.clawdbot/config.yml
-channels:
-  feishu:
-    enabled: true
-    appId: "cli_xxx"        # or use env var
-    appSecret: "xxx"        # or use env var
-    domain: feishu          # feishu | lark
-    dmPolicy: pairing       # open | pairing | allowlist
-    groupPolicy: allowlist  # open | allowlist | disabled
-```
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | boolean | `false` | Enable/disable the channel |
+| `appId` | string | - | Feishu App ID |
+| `appSecret` | string | - | Feishu App Secret |
+| `domain` | `"feishu"` \| `"lark"` | `"feishu"` | API domain (China / International) |
+| `dmPolicy` | `"open"` \| `"pairing"` \| `"allowlist"` | `"pairing"` | DM access policy |
+| `allowFrom` | string[] | `[]` | User IDs allowed for DM (when `dmPolicy: "allowlist"`) |
+| `groupPolicy` | `"open"` \| `"allowlist"` \| `"disabled"` | `"allowlist"` | Group chat access policy |
+| `groupAllowFrom` | string[] | `[]` | Group IDs allowed (when `groupPolicy: "allowlist"`) |
+| `requireMention` | boolean | `true` | Require @mention in groups |
 
 ## Feishu App Setup
 
 1. Go to [Feishu Open Platform](https://open.feishu.cn)
 2. Create a self-built app
 3. Enable permissions: `im:message`, `im:chat`, `contact:user.base:readonly`
-4. Events and callbacks use **long connection** and subscribe to `im.message.receive_v1`
-5. Get App ID and App Secret from **Credentials** page
-6. Publish the app
+4. Events → Use **Long Connection** mode
+5. Subscribe to event: `im.message.receive_v1`
+6. Get App ID and App Secret from **Credentials** page
+7. Publish the app
 
 ## License
 
-MIT
+[MIT](LICENSE)
+
