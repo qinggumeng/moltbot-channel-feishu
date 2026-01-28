@@ -1,6 +1,6 @@
 # clawdbot-plugin-feishu
 
-Feishu channel plugin for [Clawdbot](https://github.com/anthropics/clawdbot).
+Feishu channel plugin for [~~Clawdbot~~**Moltbot**](https://clawd.bot).
 
 ## Install
 
