@@ -2,11 +2,11 @@
  * WebSocket gateway for real-time Feishu events.
  */
 
-import type * as Lark from "@larksuiteoapi/node-sdk";
+import * as Lark from "@larksuiteoapi/node-sdk";
 import type { ClawdbotConfig, RuntimeEnv, HistoryEntry } from "clawdbot/plugin-sdk";
 import type { Config } from "../config/schema.js";
 import type { MessageReceivedEvent, BotAddedEvent, BotRemovedEvent } from "../types/index.js";
-import { createWsClient, createEventDispatcher, probeConnection } from "../api/client.js";
+import { createWsClient, probeConnection } from "../api/client.js";
 import { handleMessage } from "./handler.js";
 
 // ============================================================================
@@ -67,18 +67,13 @@ export async function startGateway(options: GatewayOptions): Promise<void> {
     log(`Gateway: bot open_id resolved: ${state.botOpenId ?? "unknown"}`);
   }
 
-  const connectionMode = feishuCfg.connectionMode ?? "websocket";
-  if (connectionMode !== "websocket") {
-    log("Gateway: webhook mode not implemented, use HTTP server");
-    return;
-  }
-
+  // Only websocket mode is supported
   log("Gateway: starting WebSocket connection...");
 
   const wsClient = createWsClient(feishuCfg);
   state.wsClient = wsClient;
 
-  const eventDispatcher = createEventDispatcher(feishuCfg);
+  const eventDispatcher = new Lark.EventDispatcher({});
 
   // Register event handlers
   eventDispatcher.register({
@@ -120,8 +115,15 @@ export async function startGateway(options: GatewayOptions): Promise<void> {
     },
   });
 
+  // Track reconnection attempts via polling (SDK handles reconnection internally)
+  let reconnectCheckInterval: ReturnType<typeof setInterval> | null = null;
+
   return new Promise((resolve, reject) => {
     const cleanup = () => {
+      if (reconnectCheckInterval) {
+        clearInterval(reconnectCheckInterval);
+        reconnectCheckInterval = null;
+      }
       if (state.wsClient === wsClient) {
         state.wsClient = null;
       }
@@ -144,6 +146,19 @@ export async function startGateway(options: GatewayOptions): Promise<void> {
     try {
       wsClient.start({ eventDispatcher });
       log("Gateway: WebSocket client started");
+
+      // Monitor reconnection status (SDK handles reconnection internally)
+      reconnectCheckInterval = setInterval(() => {
+        try {
+          const reconnectInfo = wsClient.getReconnectInfo?.();
+          if (reconnectInfo && reconnectInfo.nextConnectTime > 0) {
+            const nextConnect = new Date(reconnectInfo.nextConnectTime).toISOString();
+            log(`Gateway: reconnection scheduled at ${nextConnect}`);
+          }
+        } catch {
+          // getReconnectInfo may not be available in all SDK versions
+        }
+      }, 30000); // Check every 30 seconds
     } catch (err) {
       cleanup();
       abortSignal?.removeEventListener("abort", handleAbort);

@@ -36,8 +36,9 @@ channels:
 1. Go to [Feishu Open Platform](https://open.feishu.cn)
 2. Create a self-built app
 3. Enable permissions: `im:message`, `im:chat`, `contact:user.base:readonly`
-4. Get App ID and App Secret from Credentials page
-5. Publish the app
+4. Events and callbacks use **long connection** and subscribe to `im.message.receive_v1`
+5. Get App ID and App Secret from **Credentials** page
+6. Publish the app
 
 ## License
 

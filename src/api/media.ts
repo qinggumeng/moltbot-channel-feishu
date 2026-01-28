@@ -14,6 +14,8 @@ import type {
   ImageUploadResult,
   FileUploadResult,
   FileType,
+  SendImageParams,
+  SendFileParams,
 } from "../types/index.js";
 import { getApiClient } from "./client.js";
 import { normalizeTarget, resolveReceiveIdType } from "./messages.js";
@@ -184,26 +186,23 @@ interface SendMediaResponse {
 
 /**
  * Send an image message using an image_key.
+ *
+ * @throws Error if target is invalid or send fails
  */
-async function sendImage(
-  config: Config,
-  to: string,
-  imageKey: string,
-  replyToMessageId?: string
-): Promise<SendResult> {
+export async function sendImage(config: Config, params: SendImageParams): Promise<SendResult> {
   const client = getApiClient(config);
-  const receiveId = normalizeTarget(to);
+  const receiveId = normalizeTarget(params.to);
 
   if (!receiveId) {
-    throw new Error(`Invalid target: ${to}`);
+    throw new Error(`Invalid target: ${params.to}`);
   }
 
   const receiveIdType = resolveReceiveIdType(receiveId);
-  const content = JSON.stringify({ image_key: imageKey });
+  const content = JSON.stringify({ image_key: params.imageKey });
 
-  if (replyToMessageId) {
+  if (params.replyToMessageId) {
     const response = (await client.im.message.reply({
-      path: { message_id: replyToMessageId },
+      path: { message_id: params.replyToMessageId },
       data: { content, msg_type: "image" },
     })) as SendMediaResponse;
 
@@ -234,26 +233,23 @@ async function sendImage(
 
 /**
  * Send a file message using a file_key.
+ *
+ * @throws Error if target is invalid or send fails
  */
-async function sendFile(
-  config: Config,
-  to: string,
-  fileKey: string,
-  replyToMessageId?: string
-): Promise<SendResult> {
+export async function sendFile(config: Config, params: SendFileParams): Promise<SendResult> {
   const client = getApiClient(config);
-  const receiveId = normalizeTarget(to);
+  const receiveId = normalizeTarget(params.to);
 
   if (!receiveId) {
-    throw new Error(`Invalid target: ${to}`);
+    throw new Error(`Invalid target: ${params.to}`);
   }
 
   const receiveIdType = resolveReceiveIdType(receiveId);
-  const content = JSON.stringify({ file_key: fileKey });
+  const content = JSON.stringify({ file_key: params.fileKey });
 
-  if (replyToMessageId) {
+  if (params.replyToMessageId) {
     const response = (await client.im.message.reply({
-      path: { message_id: replyToMessageId },
+      path: { message_id: params.replyToMessageId },
       data: { content, msg_type: "file" },
     })) as SendMediaResponse;
 
@@ -322,7 +318,11 @@ export async function sendMedia(config: Config, params: SendMediaParams): Promis
   // Determine if it's an image and upload accordingly
   if (isImageExtension(name)) {
     const { imageKey } = await uploadImage(config, { image: buffer });
-    return sendImage(config, params.to, imageKey, params.replyToMessageId);
+    return sendImage(config, {
+      to: params.to,
+      imageKey,
+      replyToMessageId: params.replyToMessageId,
+    });
   } else {
     const fileType = detectFileType(name);
     const { fileKey } = await uploadFile(config, {
@@ -330,6 +330,6 @@ export async function sendMedia(config: Config, params: SendMediaParams): Promis
       fileName: name,
       fileType,
     });
-    return sendFile(config, params.to, fileKey, params.replyToMessageId);
+    return sendFile(config, { to: params.to, fileKey, replyToMessageId: params.replyToMessageId });
   }
 }

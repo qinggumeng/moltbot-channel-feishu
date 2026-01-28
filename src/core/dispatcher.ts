@@ -44,7 +44,7 @@ export async function addTypingIndicator(
   try {
     const reactionId = await addReaction(config, {
       messageId,
-      emojiType: Emoji.EYES,
+      emojiType: Emoji.TYPING,
     });
     return { messageId, reactionId };
   } catch {

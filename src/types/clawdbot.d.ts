@@ -133,19 +133,19 @@ declare module "clawdbot/plugin-sdk" {
           defaultLimit: number;
         }): number;
         resolveChunkMode(cfg: ClawdbotConfig, channel: string): string;
-        resolveMarkdownTableMode(params: {
-          cfg: ClawdbotConfig;
-          channel: string;
-        }): string;
+        resolveMarkdownTableMode(params: { cfg: ClawdbotConfig; channel: string }): string;
         convertMarkdownTables(text: string, mode: string): string;
         chunkTextWithMode(text: string, limit: number, mode: string): string[];
       };
     };
     system: {
-      enqueueSystemEvent(message: string, params: {
-        sessionKey: string;
-        contextKey: string;
-      }): void;
+      enqueueSystemEvent(
+        message: string,
+        params: {
+          sessionKey: string;
+          contextKey: string;
+        }
+      ): void;
     };
     [key: string]: unknown;
   }

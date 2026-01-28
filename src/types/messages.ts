@@ -8,8 +8,8 @@ export type ReceiveIdType = "open_id" | "user_id" | "union_id" | "chat_id";
 /** Domain selection */
 export type FeishuDomain = "feishu" | "lark";
 
-/** Connection mode */
-export type ConnectionMode = "websocket" | "webhook";
+/** Connection mode (websocket only) */
+export type ConnectionMode = "websocket";
 
 /** DM access policy */
 export type DmPolicy = "open" | "pairing" | "allowlist";
@@ -105,6 +105,20 @@ export interface SendMediaParams {
   mediaUrl?: string;
   mediaBuffer?: Buffer;
   fileName?: string;
+  replyToMessageId?: string;
+}
+
+/** Parameters for sending an already-uploaded image */
+export interface SendImageParams {
+  to: string;
+  imageKey: string;
+  replyToMessageId?: string;
+}
+
+/** Parameters for sending an already-uploaded file */
+export interface SendFileParams {
+  to: string;
+  fileKey: string;
   replyToMessageId?: string;
 }
 

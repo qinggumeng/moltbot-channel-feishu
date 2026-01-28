@@ -39,6 +39,7 @@ export const Emoji = {
   // Typing indicator (commonly used)
   WRITING: "WRITING",
   EYES: "EYES",
+  TYPING: "Typing",
 } as const;
 
 export type EmojiType = (typeof Emoji)[keyof typeof Emoji];

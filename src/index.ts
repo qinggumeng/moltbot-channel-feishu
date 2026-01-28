@@ -23,7 +23,14 @@ export {
   isValidId,
 } from "./api/messages.js";
 
-export { uploadImage, uploadFile, sendMedia, detectFileType } from "./api/media.js";
+export {
+  uploadImage,
+  uploadFile,
+  sendMedia,
+  sendImage,
+  sendFile,
+  detectFileType,
+} from "./api/media.js";
 
 export { addReaction, removeReaction, listReactions, Emoji } from "./api/reactions.js";
 
@@ -86,6 +93,8 @@ export type {
   ImageUploadResult,
   FileUploadResult,
   FileType,
+  SendImageParams,
+  SendFileParams,
   // Reactions
   Reaction,
   AddReactionParams,

@@ -72,16 +72,6 @@ export function listGroupsFromConfig(
 // Live Directory (from API)
 // ============================================================================
 
-interface ListUsersResponse {
-  code?: number;
-  data?: {
-    items?: {
-      open_id?: string;
-      name?: string;
-    }[];
-  };
-}
-
 /**
  * List users from Feishu API.
  * Falls back to config-based listing if API unavailable.
@@ -100,28 +90,33 @@ export async function listUsers(
     const limit = params.limit ?? 50;
     const query = params.query?.trim().toLowerCase() ?? "";
 
-    const response = (await client.contact.user.list({
-      params: { page_size: Math.min(limit, 50) },
-    })) as ListUsersResponse;
-
-    if (response.code !== 0 || !response.data?.items) {
-      return listUsersFromConfig(config, params);
-    }
-
     const users: DirectoryUser[] = [];
-    for (const user of response.data.items) {
-      if (!user.open_id) continue;
 
-      const name = user.name ?? "";
-      const matchesQuery =
-        !query || user.open_id.toLowerCase().includes(query) || name.toLowerCase().includes(query);
+    // Use SDK's iterator for automatic pagination
+    const iterator = await client.contact.user.listWithIterator({
+      params: { page_size: Math.min(limit, 50) },
+    });
 
-      if (matchesQuery) {
-        users.push({
-          kind: "user",
-          id: user.open_id,
-          name: name || undefined,
-        });
+    for await (const page of iterator) {
+      const items = page?.items;
+      if (!items) continue;
+
+      for (const user of items) {
+        if (!user.open_id) continue;
+
+        const name = user.name ?? "";
+        const matchesQuery =
+          !query || user.open_id.toLowerCase().includes(query) || name.toLowerCase().includes(query);
+
+        if (matchesQuery) {
+          users.push({
+            kind: "user",
+            id: user.open_id,
+            name: name || undefined,
+          });
+        }
+
+        if (users.length >= limit) break;
       }
 
       if (users.length >= limit) break;
@@ -133,15 +128,6 @@ export async function listUsers(
   }
 }
 
-interface ListChatsResponse {
-  code?: number;
-  data?: {
-    items?: {
-      chat_id?: string;
-      name?: string;
-    }[];
-  };
-}
 
 /**
  * List groups from Feishu API.
@@ -161,28 +147,33 @@ export async function listGroups(
     const limit = params.limit ?? 50;
     const query = params.query?.trim().toLowerCase() ?? "";
 
-    const response = (await client.im.chat.list({
-      params: { page_size: Math.min(limit, 100) },
-    })) as ListChatsResponse;
-
-    if (response.code !== 0 || !response.data?.items) {
-      return listGroupsFromConfig(config, params);
-    }
-
     const groups: DirectoryGroup[] = [];
-    for (const chat of response.data.items) {
-      if (!chat.chat_id) continue;
 
-      const name = chat.name ?? "";
-      const matchesQuery =
-        !query || chat.chat_id.toLowerCase().includes(query) || name.toLowerCase().includes(query);
+    // Use SDK's iterator for automatic pagination
+    const iterator = await client.im.chat.listWithIterator({
+      params: { page_size: Math.min(limit, 100) },
+    });
 
-      if (matchesQuery) {
-        groups.push({
-          kind: "group",
-          id: chat.chat_id,
-          name: name || undefined,
-        });
+    for await (const page of iterator) {
+      const items = page?.items;
+      if (!items) continue;
+
+      for (const chat of items) {
+        if (!chat.chat_id) continue;
+
+        const name = chat.name ?? "";
+        const matchesQuery =
+          !query || chat.chat_id.toLowerCase().includes(query) || name.toLowerCase().includes(query);
+
+        if (matchesQuery) {
+          groups.push({
+            kind: "group",
+            id: chat.chat_id,
+            name: name || undefined,
+          });
+        }
+
+        if (groups.length >= limit) break;
       }
 
       if (groups.length >= limit) break;

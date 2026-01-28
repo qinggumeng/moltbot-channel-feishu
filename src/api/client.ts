@@ -79,16 +79,7 @@ export function createWsClient(config: Config): Lark.WSClient {
   });
 }
 
-/**
- * Create an event dispatcher for WebSocket events.
- */
-export function createEventDispatcher(config: Config): Lark.EventDispatcher {
-  const credentials = resolveCredentials(config);
-  return new Lark.EventDispatcher({
-    encryptKey: credentials?.encryptKey,
-    verificationToken: credentials?.verificationToken,
-  });
-}
+
 
 /**
  * Clear the client cache.

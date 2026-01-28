@@ -17,7 +17,7 @@
     ],
     "files": [
         "src",
-        "clawdbot.plugin.json"
+        "moltbot.plugin.json"
     ],
     "scripts": {
         "build": "tsc",
@@ -27,9 +27,11 @@
         "format": "prettier --write src/",
         "format:check": "prettier --check src/",
         "typecheck": "tsc --noEmit",
-        "test": "vitest run",
+        "test": "npm run build && vitest run",
         "test:watch": "vitest",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "prerelease": "npm run lint && npm run build && npm run test && node --check dist/index.js && echo '✅ All checks passed'",
+        "dev:local": "tsx scripts/local-test.ts"
     },
     "clawdbot": {
         "extensions": [
@@ -57,11 +59,15 @@
         "@types/node": "^22.0.0",
         "@typescript-eslint/eslint-plugin": "^8.0.0",
         "@typescript-eslint/parser": "^8.0.0",
+        "@vitest/coverage-v8": "^2.1.9",
         "clawdbot": "^2026.1.24",
+        "dotenv": "^17.2.3",
         "eslint": "^9.0.0",
         "prettier": "^3.8.1",
+        "tsx": "^4.21.0",
         "typescript": "^5.7.0",
         "typescript-eslint": "^8.54.0",
+        "vite-tsconfig-paths": "^6.0.5",
         "vitest": "^2.0.0"
     },
     "peerDependencies": {

@@ -12,7 +12,7 @@ import { z } from "zod";
 export const DmPolicySchema = z.enum(["open", "pairing", "allowlist"]);
 export const GroupPolicySchema = z.enum(["open", "allowlist", "disabled"]);
 export const DomainSchema = z.enum(["feishu", "lark"]);
-export const ConnectionModeSchema = z.enum(["websocket", "webhook"]);
+export const ConnectionModeSchema = z.literal("websocket");
 export const MarkdownModeSchema = z.enum(["native", "escape", "strip"]);
 export const TableModeSchema = z.enum(["native", "ascii", "simple"]);
 export const ChunkModeSchema = z.enum(["length", "newline"]);
@@ -90,14 +90,9 @@ export const ConfigSchema = z
     enabled: z.boolean().optional(),
     appId: z.string().optional(),
     appSecret: z.string().optional(),
-    encryptKey: z.string().optional(),
-    verificationToken: z.string().optional(),
     domain: DomainSchema.optional().default("feishu"),
+    // Connection (websocket only, webhook removed)
     connectionMode: ConnectionModeSchema.optional().default("websocket"),
-
-    // Webhook settings
-    webhookPath: z.string().optional().default("/feishu/events"),
-    webhookPort: z.number().int().positive().optional(),
 
     // DM settings
     dmPolicy: DmPolicySchema.optional().default("pairing"),
@@ -162,8 +157,6 @@ export interface Credentials {
   appId: string;
   appSecret: string;
   domain: "feishu" | "lark";
-  encryptKey?: string;
-  verificationToken?: string;
 }
 
 /**
@@ -182,7 +175,5 @@ export function resolveCredentials(config: Config | undefined): Credentials | nu
     appId,
     appSecret,
     domain: config?.domain ?? "feishu",
-    encryptKey: config?.encryptKey,
-    verificationToken: config?.verificationToken,
   };
 }

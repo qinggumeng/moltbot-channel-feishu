@@ -17,6 +17,7 @@ import { sendTextMessage, normalizeTarget, isValidId } from "../api/messages.js"
 import { sendMedia } from "../api/media.js";
 import { listUsers, listGroups } from "../api/directory.js";
 import { resolveGroupToolPolicy } from "../core/policy.js";
+import { getRuntime } from "../core/runtime.js";
 import { feishuOnboarding } from "./onboarding.js";
 
 // ============================================================================
@@ -125,12 +126,8 @@ export const feishuChannel: ChannelPlugin<ResolvedAccount> = {
         enabled: { type: "boolean" },
         appId: { type: "string" },
         appSecret: { type: "string" },
-        encryptKey: { type: "string" },
-        verificationToken: { type: "string" },
         domain: { type: "string", enum: ["feishu", "lark"] },
-        connectionMode: { type: "string", enum: ["websocket", "webhook"] },
-        webhookPath: { type: "string" },
-        webhookPort: { type: "integer", minimum: 1 },
+        connectionMode: { type: "string", enum: ["websocket"] },
         dmPolicy: { type: "string", enum: ["open", "pairing", "allowlist"] },
         allowFrom: { type: "array", items: { oneOf: [{ type: "string" }, { type: "number" }] } },
         groupPolicy: { type: "string", enum: ["open", "allowlist", "disabled"] },
@@ -260,34 +257,29 @@ export const feishuChannel: ChannelPlugin<ResolvedAccount> = {
     textChunkLimit: 4000,
 
     chunker: (text, limit) => {
-      if (text.length <= limit) return [text];
-      const chunks: string[] = [];
-      let remaining = text;
-      while (remaining.length > limit) {
-        let breakPoint = remaining.lastIndexOf("\n\n", limit);
-        if (breakPoint === -1) breakPoint = remaining.lastIndexOf("\n", limit);
-        if (breakPoint === -1) breakPoint = limit;
-        chunks.push(remaining.slice(0, breakPoint).trim());
-        remaining = remaining.slice(breakPoint).trim();
-      }
-      if (remaining) chunks.push(remaining);
-      return chunks;
+      return getRuntime().channel.text.chunkTextWithMode(text, limit, "markdown");
     },
 
     sendText: async ({ cfg, to, text }) => {
       const feishuCfg = cfg.channels?.feishu as Config | undefined;
       if (!feishuCfg) throw new Error("Feishu not configured");
-      const result = await sendTextMessage(feishuCfg, { to, text });
+      const runtime = getRuntime();
+      const tableMode = runtime.channel.text.resolveMarkdownTableMode({ cfg, channel: "feishu" });
+      const convertedText = runtime.channel.text.convertMarkdownTables(text ?? "", tableMode);
+      const result = await sendTextMessage(feishuCfg, { to, text: convertedText });
       return { channel: "feishu", ...result };
     },
 
     sendMedia: async ({ cfg, to, text, mediaUrl }) => {
       const feishuCfg = cfg.channels?.feishu as Config | undefined;
       if (!feishuCfg) throw new Error("Feishu not configured");
+      const runtime = getRuntime();
+      const tableMode = runtime.channel.text.resolveMarkdownTableMode({ cfg, channel: "feishu" });
 
       // Send text first if provided
       if (text?.trim()) {
-        await sendTextMessage(feishuCfg, { to, text });
+        const convertedText = runtime.channel.text.convertMarkdownTables(text, tableMode);
+        await sendTextMessage(feishuCfg, { to, text: convertedText });
       }
 
       // Send media if URL provided
@@ -303,7 +295,8 @@ export const feishuChannel: ChannelPlugin<ResolvedAccount> = {
         }
       }
 
-      const result = await sendTextMessage(feishuCfg, { to, text: text ?? "" });
+      const convertedFallback = runtime.channel.text.convertMarkdownTables(text ?? "", tableMode);
+      const result = await sendTextMessage(feishuCfg, { to, text: convertedFallback });
       return { channel: "feishu", ...result };
     },
   },
@@ -353,9 +346,8 @@ export const feishuChannel: ChannelPlugin<ResolvedAccount> = {
       const feishuCfg = ctx.cfg.channels?.feishu as Config | undefined;
       if (!feishuCfg) throw new Error("Feishu not configured");
 
-      const port = feishuCfg.webhookPort ?? null;
-      ctx.setStatus({ accountId: ctx.accountId, port });
-      ctx.log?.info(`Starting Feishu provider (mode: ${feishuCfg.connectionMode ?? "websocket"})`);
+      ctx.setStatus({ accountId: ctx.accountId });
+      ctx.log?.info("Starting Feishu provider (websocket)");
 
       return startGateway({
         cfg: ctx.cfg,
