@@ -1,0 +1,7 @@
+{
+    "id": "feishu",
+    "name": "Feishu",
+    "description": "Feishu/Lark (飞书) channel plugin for Clawdbot",
+    "version": "0.0.1",
+    "entry": "./dist/index.js"
+}

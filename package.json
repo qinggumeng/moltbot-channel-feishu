@@ -1,0 +1,75 @@
+{
+    "name": "clawdbot-plugin-feishu",
+    "version": "0.0.1",
+    "type": "module",
+    "description": "Production-grade Feishu/Lark channel plugin for Clawdbot",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/samzong/clawdbot-plugin-feishu"
+    },
+    "keywords": [
+        "clawdbot",
+        "feishu",
+        "lark",
+        "plugin",
+        "channel"
+    ],
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "clawdbot.plugin.json"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "lint": "eslint src/",
+        "lint:fix": "eslint src/ --fix",
+        "format": "prettier --write src/",
+        "format:check": "prettier --check src/",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "clean": "rm -rf dist"
+    },
+    "clawdbot": {
+        "extensions": [
+            "./dist/index.js"
+        ],
+        "channel": {
+            "id": "feishu",
+            "label": "Feishu",
+            "selectionLabel": "Feishu/Lark (飞书)",
+            "docsPath": "/channels/feishu",
+            "docsLabel": "feishu",
+            "blurb": "飞书/Lark enterprise messaging.",
+            "aliases": [
+                "lark"
+            ],
+            "order": 70
+        }
+    },
+    "dependencies": {
+        "@larksuiteoapi/node-sdk": "^1.30.0",
+        "zod": "^3.23.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@types/node": "^22.0.0",
+        "@typescript-eslint/eslint-plugin": "^8.0.0",
+        "@typescript-eslint/parser": "^8.0.0",
+        "clawdbot": "^2026.1.24",
+        "eslint": "^9.0.0",
+        "prettier": "^3.8.1",
+        "typescript": "^5.7.0",
+        "typescript-eslint": "^8.54.0",
+        "vitest": "^2.0.0"
+    },
+    "peerDependencies": {
+        "clawdbot": ">=2026.1.24"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}
