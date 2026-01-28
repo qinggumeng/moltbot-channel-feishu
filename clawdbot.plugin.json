@@ -18,11 +18,7 @@
                 "type": "string",
                 "description": "Feishu App Secret"
             }
-        },
-        "required": [
-            "appId",
-            "appSecret"
-        ]
+        }
     },
     "uiHints": {
         "appId": {
