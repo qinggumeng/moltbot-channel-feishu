@@ -6,10 +6,14 @@
 
 ```bash
 # npm
-moltbot plugin install moltbot-channel-feishu
+moltbot plugins install moltbot-channel-feishu
 
 # GitHub (for testing)
-moltbot plugin install github:samzong/moltbot-channel-feishu
+moltbot plugins install github:samzong/moltbot-channel-feishu
+
+# if already use clawdbot
+clawdbot plugins install moltbot-channel-feishu
+clawdbot plugins install github:samzong/moltbot-channel-feishu
 ```
 
 ## Configure
