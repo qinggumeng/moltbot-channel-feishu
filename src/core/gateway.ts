@@ -23,16 +23,22 @@ export interface GatewayState {
   botOpenId: string | undefined;
   wsClient: Lark.WSClient | null;
   chatHistories: Map<string, HistoryEntry[]>;
+  /** Message ID deduplication cache to prevent duplicate event processing */
+  processedMessages: Set<string>;
 }
 
 // ============================================================================
 // Gateway State
 // ============================================================================
 
+/** Max processed messages to cache (LRU-style) */
+const MAX_PROCESSED_MESSAGES = 5000;
+
 const state: GatewayState = {
   botOpenId: undefined,
   wsClient: null,
   chatHistories: new Map(),
+  processedMessages: new Set(),
 };
 
 /**
@@ -80,6 +86,24 @@ export async function startGateway(options: GatewayOptions): Promise<void> {
     "im.message.receive_v1": async (data: unknown) => {
       try {
         const event = data as MessageReceivedEvent;
+        const messageId = event.message?.message_id;
+
+        // Dedupe: skip if already processed (Feishu SDK may push duplicates)
+        if (messageId && state.processedMessages.has(messageId)) {
+          log(`Gateway: skipping duplicate message ${messageId}`);
+          return;
+        }
+
+        // Track processed message
+        if (messageId) {
+          state.processedMessages.add(messageId);
+          // LRU-style cleanup: remove oldest entries when cache is full
+          if (state.processedMessages.size > MAX_PROCESSED_MESSAGES) {
+            const oldest = state.processedMessages.values().next().value;
+            if (oldest) state.processedMessages.delete(oldest);
+          }
+        }
+
         await handleMessage({
           cfg,
           event,
@@ -174,4 +198,5 @@ export function stopGateway(): void {
   state.wsClient = null;
   state.botOpenId = undefined;
   state.chatHistories.clear();
+  state.processedMessages.clear();
 }
