@@ -41,7 +41,7 @@
         "dev:local": "tsx scripts/local-test.ts",
         "version": "node scripts/sync-version.js && git add moltbot.plugin.json clawdbot.plugin.json"
     },
-    "clawdbot": {
+    "openclaw": {
         "extensions": [
             "./src/index.ts"
         ],
