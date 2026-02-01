@@ -24,6 +24,7 @@
     "files": [
         "src",
         "moltbot.plugin.json",
+        "openclaw.plugin.json",
         "clawdbot.plugin.json"
     ],
     "scripts": {
